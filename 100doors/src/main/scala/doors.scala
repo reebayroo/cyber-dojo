@@ -1,4 +1,4 @@
-package door
+package doors
 
 class Door(var closed:Boolean){
     def toogle =  

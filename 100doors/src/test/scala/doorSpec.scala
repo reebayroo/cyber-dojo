@@ -1,5 +1,5 @@
 import org.scalatest.FunSuite
-import door._
+import doors._
 class DoorSpec  extends FunSuite {
 
     test("Given 100 closed doors, loop and toggle them all, till one is left") {
