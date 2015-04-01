@@ -1,32 +1,35 @@
 package bowling
 
+object FrameStatus extends Enumeration {
+   val  Normal, Strike, Spare = Value
+}
 object Game {
-    def apply(players:Int):Game=new Game(players)
+    def apply(players:String*):Game=new Game(
+        players.zipWithIndex.map( (t) => new Player(t._1, t._2+1)).toList)
+
+
 }
 
-class Game(val players:Int){
+class Game(val players:List[Player]){
 
-    var frames:List[Frame] = Nil
-    var currentPlayer = 0
-
-    def newTurn():Frame = {
-        val newFrame = new Frame(currentPlayer)
-        frames =  newFrame :: frames
-        setNextPlayer();
-        return newFrame
+    var currentPlayer = players(0)
+    var queue = players.toList
+    var play = 0
+    private def switchPlayer(){
+        queue = queue.tail ::: queue.head :: Nil
+        currentPlayer = queue.head
+        play = 0
     }
-    private def setNextPlayer(){
-        currentPlayer = if (currentPlayer + 1 ==  players) 0 else currentPlayer + 1
-    }
-}
-class Frame(val player:Int){
-    var score = 0
-    var over = false
     def newTry(pins:Int)={
-        if (over){
-            throw new IllegalStateException("The frame is over")
-        }
-        score += pins
-        over = score == 10
+        play += 1
+
+        if (play == 2) switchPlayer
+        if (pins == 10) switchPlayer
+
+
+    }
+    def score():Int = {
+        0
     }
 }
+case class Player(val name:String, val index:Int)

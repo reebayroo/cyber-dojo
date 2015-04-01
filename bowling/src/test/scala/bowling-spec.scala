@@ -4,44 +4,32 @@ import org.scalatest.BeforeAndAfter
 
 class BowlingSpec extends FunSuite with BeforeAndAfter {
 
+    var john = Player("john", 1)
+    var smith = Player("smith", 2)
     var game: Game  = _
     before {
-         game = Game(2)
+         game = Game("john", "smith")
     }
     test("A bowling game will have a predefinide number of players"){
-        assert(game.players == 2)
+        assert(game.players == List(john, smith))
     }
     
-    test("a game will have frames"){
-        var frame = game.newTurn()
-        assert(frame.player == 0)
+    test("Every game will have the appropriate player"){
+        assert(game.currentPlayer == john)
     }
 
-    test("Every frame will have the appropriate player"){
-        var frame = game.newTurn()
-        assert(frame.player == 0)
-        var frame2 = game.newTurn()
-        assert(frame2.player == 1)
-        var frame3 = game.newTurn()
-        assert(frame3.player == 0)
+    test("Once a player plays twice, the game switches to the next player"){
+        game.newTry(2)
+        game.newTry(4)
+        assert(game.currentPlayer == smith)
     }
-    test("Every frame will have two tries, with the score being the sum"){
-        var frame = game.newTurn()
-        frame.newTry(3)
-        frame.newTry(2)
-        assert(frame.score == 5)
+    test("A strike will switch the player"){
+        game.newTry(10)
+        assert(game.currentPlayer == smith)
     }
-    test("A frame will have one try if the first is a strike"){
-        var frame = game.newTurn()
-        frame.newTry(10)
-        intercept[IllegalStateException]{
-            frame.newTry(1)
-        }
+    test("A spare will switch the player"){
+        game.newTry(1)
+        game.newTry(9)
+        assert(game.currentPlayer == smith)
     }
-    test("When a strike happens the frame is over"){
-        var frame = game.newTurn()
-        frame.newTry(10)
-        assert(frame.over == true)
-    }
-
 }
