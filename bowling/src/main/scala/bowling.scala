@@ -1,35 +1,42 @@
 package bowling
-
-object FrameStatus extends Enumeration {
-   val  Normal, Strike, Spare = Value
-}
-object Game {
-    def apply(players:String*):Game=new Game(
-        players.zipWithIndex.map( (t) => new Player(t._1, t._2+1)).toList)
-
-
-}
-
-class Game(val players:List[Player]){
-
-    var currentPlayer = players(0)
-    var queue = players.toList
-    var play = 0
-    private def switchPlayer(){
-        queue = queue.tail ::: queue.head :: Nil
-        currentPlayer = queue.head
-        play = 0
+class Game(val player:String){
+    var frames = Frame():: Nil
+    def ball(pins:Int):Game ={
+        if (frames.head.shallSwitch)
+            frames = Frame() :: frames
+        frames.head.ball(pins)
+        this
     }
-    def newTry(pins:Int)={
+    def score():Int = 0
+    def frameScore():Int = {
+        val score = frames.head.score
+        if (score==10) 0 else score
+    }
+    override def toString():String = {
+        frames.reverse.mkString("|")
+    }
+
+}
+case class Frame(var first:Int=0, var second:Int=0, var play:Int=0){
+    def score():Int = first + second
+    def ball(pins:Int) {
+        play match {
+            case 0 => first = pins
+            case 1 => second = pins
+        }
         play += 1
-
-        if (play == 2) switchPlayer
-        if (pins == 10) switchPlayer
-
-
     }
-    def score():Int = {
-        0
+    def shallSwitch():Boolean=
+        (play == 2) || (first == 10)
+    override def toString():String={
+        def missed(ball:Int):String = if (ball == 0) "-" else ball.toString
+        val missedFirst = missed(first)
+        val missedSecond = missed(second)
+        if (play==0) ""
+        else if (play == 1 && first != 10) missedFirst
+        else if (first==10) "X"
+        else if (score == 10 && first > 0) s"$missedFirst/"
+        else if (score == 10) "-/"
+        else s"$missedFirst$missedSecond"
     }
 }
-case class Player(val name:String, val index:Int)

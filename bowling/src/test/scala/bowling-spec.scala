@@ -4,32 +4,53 @@ import org.scalatest.BeforeAndAfter
 
 class BowlingSpec extends FunSuite with BeforeAndAfter {
 
-    var john = Player("john", 1)
-    var smith = Player("smith", 2)
-    var game: Game  = _
+    var game : Game = _
     before {
-         game = Game("john", "smith")
-    }
-    test("A bowling game will have a predefinide number of players"){
-        assert(game.players == List(john, smith))
-    }
-    
-    test("Every game will have the appropriate player"){
-        assert(game.currentPlayer == john)
+        game = new Game("John")
     }
 
-    test("Once a player plays twice, the game switches to the next player"){
-        game.newTry(2)
-        game.newTry(4)
-        assert(game.currentPlayer == smith)
+    test("A frame score will be the sum of the tries"){
+
+        game.ball(3)
+        game.ball(3)
+        assert(game.frameScore == 6)
     }
-    test("A strike will switch the player"){
-        game.newTry(10)
-        assert(game.currentPlayer == smith)
+    test("A frame score will be zero if a strike happens"){
+        game.ball(10)
+        assert(game.frameScore==0)
+
     }
-    test("A spare will switch the player"){
-        game.newTry(1)
-        game.newTry(9)
-        assert(game.currentPlayer == smith)
+    test("A frame score will be zero if a spare happens"){
+        game.ball(1)
+        game.ball(9)
+        assert(game.frameScore==0)
+    }
+    test("A strike should be 'X'"){
+        game.ball(10)
+        assert(game.toString == "X")
+    }
+    test("A spare should be the try plus / "){
+        game.ball(1)
+        game.ball(9)
+        assert(game.toString == "1/")
+    }
+    test("A simple play should display both tries together"){
+        assert(game.ball(3).ball(4).toString == "34")
+    }
+    test("misses should be displayed with - "){
+        assert(game.ball(0).ball(4).toString == "-4")
+        assert(game.ball(3).ball(0).toString == "-4|3-")
+    }
+    test("If a try hasnt happened yet, display nothing"){
+        assert(game.toString == "")
+        assert(game.ball(0).toString == "-")
+    }
+    test("A set of frames should be separated by '|'"){
+        game.ball(2)
+        game.ball(3)
+        game.ball(4)
+        game.ball(6)
+        game.ball(10)
+        assert(game.toString == "23|4/|X")
     }
 }
