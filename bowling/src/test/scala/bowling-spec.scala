@@ -53,4 +53,35 @@ class BowlingSpec extends FunSuite with BeforeAndAfter {
         game.ball(10)
         assert(game.toString == "23|4/|X")
     }
+    test("A total score is the sum of the plays if they are simple"){
+        game.ball(2)
+        game.ball(7)
+        assert(game.score == 9)
+    }
+    test("Play 1/|3: Score 10 + 3 + 3"){
+        game.ball(1)
+        game.ball(9)
+        game.ball(3)
+        assert(game.score == 10 + 3 + 3)
+    }
+    test("Play: X|1: Score 10 + 1 + 0  + 1 "){
+        game.ball(10).ball(1) 
+        assert(game.score == 10 + 1  + 1 )
+
+    }
+    test("Play: X|12: Score 10 + 1 + 2  + 1 + 2 "){
+        game.ball(10) ball(1) ball(2)
+        assert(game.score == 10 + 1  + 2 + 3 )
+    }
+    test("Play: X|X|3 is 10 + 13 + 10 + 3 + 3"){
+        game.ball(10) ball(10) ball(3)
+
+        assert(game.score == (10 + 10 + 3) + (10 + 3 ) + 3)
+    }
+    test("Perfect game 30 x 10"){
+        game  ball(10) ball(10) ball(10) ball(10) ball(10) ball(10) ball(10) ball(10) ball(10) ball(10) ball(10) ball(10)
+        assert(game.score == 300)
+    }
+
+
 }
