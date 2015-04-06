@@ -83,5 +83,23 @@ class BowlingSpec extends FunSuite with BeforeAndAfter {
         assert(game.score == 300)
     }
 
+    test("The Game ends at the tenth play"){
+        ( game ball(10) ball(10) ball(10) ball(10) ball(10) 
+               ball(10) ball(10) ball(10) ball(10) ball(3) ball(1) )
+
+        intercept [IllegalStateException] {
+            game.ball(1)
+        }
+
+    }
+    test("The game gives a bonus play if the 10th is a spare "){
+        ( game ball(10) ball(10) ball(10) ball(10) ball(10) 
+               ball(10) ball(10) ball(10) ball(10) ball(3) ball(7) )
+        game ball(2)
+        intercept [IllegalStateException] {
+            game.ball(1)
+        }
+
+    }
 
 }
