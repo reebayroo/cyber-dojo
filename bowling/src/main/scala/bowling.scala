@@ -1,16 +1,10 @@
 package bowling
 class Game(val player:String){
-    var frames = Frame():: Nil
-    def newFrame():Frame =
-        if (frames.size < 10)
-             Frame()
-        else if (frames.head.strike) new BonusStrike()
-        else if (frames.head.spare ) new BonusSpare()
-        else new GameOver()
+    var frames = new Frame():: Nil
         
     def ball(pins:Int):Game ={
         if (frames.head.shallSwitch) 
-            frames = newFrame :: frames
+            frames = new Frame() :: frames
 
         frames.head.ball(pins)
         this
@@ -18,28 +12,25 @@ class Game(val player:String){
     def score():Int = {
         val inverted = frames.reverse
         println("score on: " +  inverted.mkString("|"))
-        var list = convertToPlays(frames.reverse)
-  /*      
-        using convertToPlays recursive instead of mutable
-        var list = List[Int]::Nil
-        frames.foreach( f => list = if (f.strike) 10 :: list
-                                     else f.first :: f.second :: list )
-
-    */
-        println("scores on: " + list.mkString(", "))
-        sumPlays(list)
-        // doSum(inverted.head, inverted.tail)
+        val plays = frames.foldLeft[List[Ball]](Nil){
+            (result:List[Ball], frame:Frame) => frame.plays.reverse ::: result
+        }
+        println(plays.mkString(","))
+        return doSum(plays)
+    }
+    def doSum(plays:List[Ball]):Int = plays match {
+        case Miss()::tail => doSum(tail)
+        case Spare(x)::some::tail => 10 + some.pins + doSum(some::tail) 
+        //case Strike()::Nil => 10
+        case NormalBall(_)::Spare(x)::tail =>  doSum(Spare(x)::tail)
+        case NormalBall(x)::tail => x + doSum(tail) 
+        case Strike()::some::Nil => 10 + some.pins + doSum(some::Nil)
+        case Strike()::some::other::tail => 10 + some.pins + other.pins + doSum(some::other::tail)
+        case Nil => 0
     }
     def gameIsOver():Boolean = (
         ( frames.size > 10 && !frames.tail.head.spare) 
     )
-    
-    def convertToPlays(theFrames:List[Frame]):List[Int]= theFrames match {
-        case Nil => Nil
-        case head::tail => if (head.strike) 10 :: convertToPlays(tail)
-        else head.first :: head.second :: convertToPlays(tail)
-    }
-
 
     def sumPlays(plays : List[Int]):Int = plays match {
         case Nil => 0
@@ -59,6 +50,14 @@ class Game(val player:String){
     }
 
 }
+sealed abstract class Ball(val pins:Int, strRep:String)
+{
+    override def toString():String = strRep
+}
+case class Strike() extends Ball(10, "X")
+case class Spare (override val pins:Int) extends Ball(pins, "/")
+case class Miss() extends Ball(0,"-")
+case class NormalBall  (override val pins:Int) extends Ball(pins, pins.toString)
 
 class GameOver extends Frame {
     override def shallSwitch():Boolean=false 
@@ -69,36 +68,36 @@ class BonusSpare extends Frame {
     override def shallSwitch():Boolean=false
     override def ball(pins:Int) = {
         super.ball(pins)
-        if (play>1) 
+        if (plays.size > 1) 
             throw new IllegalStateException("Game is over")
     }
 }
 
 class BonusStrike extends Frame 
-case class Frame(var first:Int=0, var second:Int=0, var play:Int=0){
-    def score():Int = first + second
+class Frame(){
+    var plays: List[Ball]=Nil
+
+    def score():Int = plays.foldLeft(0){
+        _ + _.pins
+    }
     def ball(pins:Int) {
-        play match {
-            case 0 => first = pins
-            case 1 => second = pins
-        }
-        play += 1
+        if (pins == 10 && plays.isEmpty)
+            plays = Strike()::Nil
+        else if (pins ==0)
+            plays = Miss()::plays
+        else if (plays.nonEmpty && plays.head.pins + pins == 10)
+            plays = Spare(pins)::plays
+        else 
+            plays = NormalBall(pins)::plays
     }
 
     def shallSwitch():Boolean=
-        (play == 2) || (first == 10)
+        (plays.size == 2) || (score == 10)
 
-    def strike():Boolean = (first == 10)
-    def spare():Boolean = (score == 10) && !strike
+
+    def strike():Boolean = false
+    def spare():Boolean = false
     override def toString():String={
-        def missed(ball:Int):String = if (ball == 0) "-" else ball.toString
-        val missedFirst = missed(first)
-        val missedSecond = missed(second)
-        if (play==0) ""
-        else if (play == 1 && first != 10) missedFirst
-        else if (strike) "X"
-        else if (spare && first > 0) s"$missedFirst/"
-        else if (spare) "-/"
-        else s"$missedFirst$missedSecond"
+        plays.reverse.mkString
     }
 }
