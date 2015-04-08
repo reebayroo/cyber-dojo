@@ -78,12 +78,12 @@ class BowlingSpec extends FunSuite with BeforeAndAfter {
 
         assert(game.score == (10 + 10 + 3) + (10 + 3 ) + 3)
     }
-/*    test("Perfect game 30 x 10"){
+    test("Perfect game 30 x 10"){
         game  ball(10) ball(10) ball(10) ball(10) ball(10) ball(10) ball(10) ball(10) ball(10) ball(10) ball(10) ball(10)
         assert(game.score == 300)
     }
 
-    test("The Game ends at the tenth play"){
+/*    test("The Game ends at the tenth play"){
         ( game ball(10) ball(10) ball(10) ball(10) ball(10) 
                ball(10) ball(10) ball(10) ball(10) ball(3) ball(1) )
 
